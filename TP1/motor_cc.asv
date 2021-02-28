@@ -4,7 +4,7 @@
 % Sistema motor cc;
 % No domínio 's', H(s) = K/(Js + b) * (Ls + R) + K^2;
 
-close all; clear; clc;
+close all; clear all; clc;
 
 %% Escolha do periodo de amostragem:
 J = 0.01;
@@ -79,6 +79,7 @@ Dz = tf([1 -zc], [1 -1], T);
 
 figure; rlocus(Gz*Dz, K); zgrid(zeta, wn); hold on; plotcircle(0,0,r0,'k-.')
 [Kc2, raizes2] = rlocfind(Gz*Dz);
+
 figure; bode(Gz*Dz*Kc2); grid on;
 figure; nyquist(Gz*Dz*Kc2); grid on;
 % Simulacao da resposta ao degrau em MF
