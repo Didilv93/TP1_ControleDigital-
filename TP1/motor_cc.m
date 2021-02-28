@@ -17,7 +17,7 @@ L = 0.5;
 
 % Processo instavel em MA:
 num=K;
-den = [(J * L) + (J * R + L * b) (b * R + K ^ 2)];
+den = [(J * L) (J * R + L * b) (b * R + K ^ 2)];
 Gps = tf(num, den);
 
 
@@ -43,8 +43,8 @@ title('Resposta ao degrau para MF');
 %% Especificacoes de desempenho:
 
 Mpmax = 10; % percentual de overshoot
-ts = 1.14; % tempo de subida
-ta = 5; % tempo de acomodacao
+ts = 1.82; % tempo de subida
+ta = 3; % tempo de acomodacao
 
 % Regioes que atendem as especificacoes:
 zetamin = 0.6*(1 - Mpmax/100); % taxa de amortecimento
@@ -52,7 +52,7 @@ wnmin = 1.8/ts; % frequencia natural
 zetawnmin = 4.6/ta; % zeta*wn, em que wn esta em rad/s
 
 % Especificacoes (um pouco mais rigoross que valores minimos) que atendem regioes:
-zeta = 1;
+zeta = 0.5;
 wn = 6.0*T; % em rad
 zeta*wn/T; % Observe que  esse valor deve ser > zetawnmin calculado acima
 r0 = exp(-zeta*wn); % a regiao interna a esse raio delimita o ta minimo
@@ -84,5 +84,9 @@ figure; nyquist(Gz*Dz*Kc2); grid on;
 % Simulacao da resposta ao degrau em MF
 Tz2 = feedback(Gz*Dz*Kc2,1);
 zpk(Tz2)
-figure; step(Tz2);grid on;
+figure; [x2, t] = step(Tz2);grid on;
 figure(5); Tuz2 = Kc2*Dz/(1+Gz*Kc2*Dz); step(Tuz2); grid;
+
+figure; stairs(t, x2);
+xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
+title('Sistema com controlador PI, Resposta ao degrau para MF');

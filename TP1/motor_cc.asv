@@ -4,7 +4,7 @@
 % Sistema motor cc;
 % No domínio 's', H(s) = K/(Js + b) * (Ls + R) + K^2;
 
-close all; clear all; clc;
+close all; clear; clc;
 
 %% Escolha do periodo de amostragem:
 J = 0.01;
@@ -43,8 +43,8 @@ title('Resposta ao degrau para MF');
 %% Especificacoes de desempenho:
 
 Mpmax = 10; % percentual de overshoot
-ts = 1.14; % tempo de subida
-ta = 5; % tempo de acomodacao
+ts = 1.82; % tempo de subida
+ta = 3; % tempo de acomodacao
 
 % Regioes que atendem as especificacoes:
 zetamin = 0.6*(1 - Mpmax/100); % taxa de amortecimento
@@ -52,7 +52,7 @@ wnmin = 1.8/ts; % frequencia natural
 zetawnmin = 4.6/ta; % zeta*wn, em que wn esta em rad/s
 
 % Especificacoes (um pouco mais rigoross que valores minimos) que atendem regioes:
-zeta = 1;
+zeta = 0.5;
 wn = 6.0*T; % em rad
 zeta*wn/T; % Observe que  esse valor deve ser > zetawnmin calculado acima
 r0 = exp(-zeta*wn); % a regiao interna a esse raio delimita o ta minimo
@@ -79,11 +79,14 @@ Dz = tf([1 -zc], [1 -1], T);
 
 figure; rlocus(Gz*Dz, K); zgrid(zeta, wn); hold on; plotcircle(0,0,r0,'k-.')
 [Kc2, raizes2] = rlocfind(Gz*Dz);
-
 figure; bode(Gz*Dz*Kc2); grid on;
 figure; nyquist(Gz*Dz*Kc2); grid on;
 % Simulacao da resposta ao degrau em MF
 Tz2 = feedback(Gz*Dz*Kc2,1);
 zpk(Tz2)
-figure; step(Tz2);grid on;
+figure; [x2, t] = step(Tz2);grid on;
 figure(5); Tuz2 = Kc2*Dz/(1+Gz*Kc2*Dz); step(Tuz2); grid;
+
+figure; stairs(t, x2);
+xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
+title('Conrolador PIResposta ao degrau para MF');
