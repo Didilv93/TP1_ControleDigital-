@@ -1,26 +1,48 @@
-% ELT013 - Controle Digital
+% Controle Digital
 %
 % Exemplo de projeto de controlador digital pelo lugar das raizes:
-%
-% Prof. Bruno Teixeira, DELT/UFMG
+% Sistema motor cc;
+% No domínio 's', H(s) = K/(Js + b) * (Ls + R) + K^2;
 
 close all; clear all; clc;
 
 %% Escolha do periodo de amostragem:
-T = 0.05;
+J = 0.01;
+b = 0.1;
+K = 0.01;
+R = 1;
+L = 0.5;
 
 %% Modelo discreto do PROCESSO:
 
 % Processo instavel em MA:
-Gps = tf([1], [1 -2]);
+num=K;
+den = [(J * L) + (J * R + L * b) (b * R + K ^ 2)];
+Gps = tf(num, den);
+
+
+% Resposta continua em malha aberta
+figure; step(Gps, 0:0.1:5);
+xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
+title('Resposta ao degrau para MA');
+
+% Periodo de amostragem
+T = 0.12;
 
 % Planta discreta:
 Gz = c2d(Gps, T, 'zoh');
-zpk(Gz)
+zpk(Gz);
+
+% Resposta discreta em malha fechada
+sys = feedback(Gz, 1);
+[y, t] = step(sys, 5);
+figure; stairs(t,y);
+xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
+title('Resposta ao degrau para MF');
 
 %% Especificacoes de desempenho:
 
-Mpmax = 25; % percentual de overshoot
+Mpmax = 10; % percentual de overshoot
 ts = 0.5; % tempo de subida
 ta = 1.5; % tempo de acomodacao
 
