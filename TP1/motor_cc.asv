@@ -17,7 +17,7 @@ L = 0.5;
 
 % Processo instavel em MA:
 num=K;
-den = [(J * L) + (J * R + L * b) (b * R + K ^ 2)];
+den = [(J * L) (J * R + L * b) (b * R + K ^ 2)];
 Gps = tf(num, den);
 
 
@@ -34,8 +34,8 @@ Gz = c2d(Gps, T, 'zoh');
 zpk(Gz);
 
 % Resposta discreta em malha fechada
-sys = feedback(Gz, 1);
-[y, t] = step(sys, 5);
+motor_d = feedback(Gz, 1);
+[y, t] = step(motor_d, 5);
 figure; stairs(t,y);
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
 title('Resposta ao degrau para MF');
@@ -73,9 +73,13 @@ zpk(Tz1);
 figure; step(Tz1); grid on;
 figure(5); Tuz1 = Kc1/(1+Gz*Kc1); step(Tuz1); grid;
 
-%% 2) PI:
-zc = 0.9; % zero do controlador
-Dz = tf([1 -zc], [1 -1], T);
+%% 2) PID:
+Kp = 100;
+Ki = 200;
+Kd = 10;
+PID = tf([Kd Kp Ki], [1 0]);
+contr = c2d(PID, T, 'tustin');
+sys = feefback(contr*motor_d, 1); 
 
 figure; rlocus(Gz*Dz, K); zgrid(zeta, wn); hold on; plotcircle(0,0,r0,'k-.')
 [Kc2, raizes2] = rlocfind(Gz*Dz);
@@ -85,8 +89,7 @@ figure; nyquist(Gz*Dz*Kc2); grid on;
 Tz2 = feedback(Gz*Dz*Kc2,1);
 zpk(Tz2)
 figure; [x2, t] = step(Tz2);grid on;
-figure(5); Tuz2 = Kc2*Dz/(1+Gz*Kc2*Dz); step(Tuz2); grid;
 
 figure; stairs(t, x2);
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
-title('Conrolador PIResposta ao degrau para MF');
+title('Sistema com controlador PI, Resposta ao degrau para MF');

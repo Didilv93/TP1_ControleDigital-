@@ -73,7 +73,7 @@ zpk(Tz1);
 figure; step(Tz1); grid on;
 figure(5); Tuz1 = Kc1/(1+Gz*Kc1); step(Tuz1); grid;
 
-%% 2) PI:
+%% 2) PID:
 zc = 0.9; % zero do controlador
 Dz = tf([1 -zc], [1 -1], T);
 
