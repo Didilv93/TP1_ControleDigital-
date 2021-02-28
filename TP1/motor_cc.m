@@ -43,8 +43,8 @@ title('Resposta ao degrau para MF');
 %% Especificacoes de desempenho:
 
 Mpmax = 10; % percentual de overshoot
-ts = 0.5; % tempo de subida
-ta = 1.5; % tempo de acomodacao
+ts = 1.14; % tempo de subida
+ta = 5; % tempo de acomodacao
 
 % Regioes que atendem as especificacoes:
 zetamin = 0.6*(1 - Mpmax/100) % taxa de amortecimento
