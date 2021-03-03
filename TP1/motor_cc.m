@@ -32,9 +32,9 @@ title('Resposta ao degrau para MA, sistema contínuo');
 
 % Periodo de amostragem
 % Calculando pelo tempo de acomodação ts
-% ts/15 < T < ts/6 Ou 0.076 < T < 0.19
+% ts/15 < T < ts/6 Ou aproximadamente 0.12 < T < 0.3
 
-T = 0.12;
+T = 0.15;
 
 % Planta discreta:
 [numz,denz] = c2dm(num,den,T,'zoh');
@@ -111,5 +111,5 @@ title('Root Locus of Compensated System');
 t=0:0.12:12;
 stairs(t,x3)
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
-title('Sistema com controlador compensado PID, Resposta ao degrau para MF');
+title('Sistema com controlador PID compensado, Resposta ao degrau para MF');
  
