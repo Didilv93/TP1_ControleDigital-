@@ -1,8 +1,10 @@
 % Controle Digital
 %
 % Exemplo de projeto de controlador digital pelo lugar das raizes:
-% Sistema motor cc;
-% No domínio 's', H(s) = K/(Js + b) * (Ls + R) + K^2;
+% Sistema motor DC;
+% No domínio 's', G(s) = K/[(Js + b) * (Ls + R) + K^2];
+% Entrada: Tensão
+% Saída: Velocidade
 
 close all; clear; clc;
 
@@ -13,23 +15,29 @@ K = 0.01;
 R = 1;
 L = 0.5;
 
-%% Modelo discreto do PROCESSO:
+%% Modelo continuo do processo
 
-% Processo instavel em MA:
+% Processo em MA:
 num=K;
 den = [(J * L) (J * R + L * b) (b * R + K ^ 2)];
 Gps = tf(num, den);
 
 
-% Resposta continua em malha aberta
+% Resposta contínua em malha aberta
 figure; step(Gps, 0:0.1:5);
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
-title('Resposta ao degrau para MA');
+title('Resposta ao degrau para MA, sistema contínuo');
+
+%% Modelo discreto do processo:
 
 % Periodo de amostragem
+% Calculando pelo tempo de acomodação ts
+% ts/15 < T < ts/6 Ou 0.076 < T < 0.19
+
 T = 0.12;
 
 % Planta discreta:
+[numz,denz] = c2dm(num,den,T,'zoh');
 Gz = c2d(Gps, T, 'zoh');
 zpk(Gz);
 
@@ -38,7 +46,7 @@ sys = feedback(Gz, 1);
 [y, t] = step(sys, 5);
 figure; stairs(t,y);
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
-title('Resposta ao degrau para MF');
+title('Resposta ao degrau para MF, sistema discreto');
 
 %% Especificacoes de desempenho:
 
@@ -62,31 +70,46 @@ r0 = exp(-zeta*wn); % a regiao interna a esse raio delimita o ta minimo
 % Projeto digital usando lugar das raizes:
 figure; zgrid; % referencia do grid
 
-%% 1) Considerando compensador estatico:
-K = 0:0.001:50;
-figure; rlocus(Gz, K); zgrid(zeta, wn); hold on; plotcircle(0,0,r0,'k-.');
-[Kc1, raizes1] = rlocfind(Gz);
-figure; bode(Gz*Kc1); grid on;
-% Simulacao da resposta ao degrau em MF
-Tz1 = feedback(Gz*Kc1,1);
-zpk(Tz1);
-figure; step(Tz1); grid on;
-figure(5); Tuz1 = Kc1/(1+Gz*Kc1); step(Tuz1); grid;
 
-%% 2) PID:
-zc = 0.9; % zero do controlador
-Dz = tf([1 -zc], [1 -1], T);
+%% 1) PID:
 
-figure; rlocus(Gz*Dz, K); zgrid(zeta, wn); hold on; plotcircle(0,0,r0,'k-.')
-[Kc2, raizes2] = rlocfind(Gz*Dz);
-figure; bode(Gz*Dz*Kc2); grid on;
-figure; nyquist(Gz*Dz*Kc2); grid on;
-% Simulacao da resposta ao degrau em MF
-Tz2 = feedback(Gz*Dz*Kc2,1);
-zpk(Tz2)
-figure; [x2, t] = step(Tz2);grid on;
-figure(5); Tuz2 = Kc2*Dz/(1+Gz*Kc2*Dz); step(Tuz2); grid;
+Kp = 100;
+Ki = 200;
+Kd = 10;
 
-figure; stairs(t, x2);
+[dencz,numcz]=c2dm([1 0],[Kd Kp Ki],T,'tustin'); 
+
+numaz = conv(numz,numcz);
+denaz = conv(denz,dencz);
+[numaz_cl,denaz_cl] = cloop(numaz,denaz);
+
+[x2] = dstep(numaz_cl,denaz_cl,101);
+t=0:0.12:12;
+stairs(t,x2)
+xlabel('Time (seconds)')
+ylabel('Velocity (rad/s)')
+title('Stairstep Response:with PID controller')
+
+%2 Considerando compensador estatico
+
+rlocus(numaz,denaz)
+title('Root Locus of Compensated System')
+
+dencz = conv([1 -1],[1.6 1]);
+numaz = conv(numz,numcz);
+denaz = conv(denz,dencz);
+
+rlocus(numaz,denaz)
+title('Root Locus of Compensated System');
+
+% Escolher um polo em -0.625 para anular o zero do sistema não compesado
+
+[K,poles] = rlocfind(numaz,denaz);
+[numaz_cl,denaz_cl] = cloop(K*numaz,denaz);
+
+[x3] = dstep(numaz_cl,denaz_cl,101);
+t=0:0.12:12;
+stairs(t,x3)
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
-title('Sistema com controlador PI, Resposta ao degrau para MF');
+title('Sistema com controlador compensado PID, Resposta ao degrau para MF');
+ 
