@@ -65,13 +65,11 @@ wn = 6.0*T; % em rad
 zeta*wn/T; % Observe que  esse valor deve ser > zetawnmin calculado acima
 r0 = exp(-zeta*wn); % a regiao interna a esse raio delimita o ta minimo
 
-%% Projeto direto:
+
+%% 1) Projeto direto PID:
 
 % Projeto digital usando lugar das raizes:
 figure; zgrid; % referencia do grid
-
-
-%% 1) PID:
 
 Kp = 100;
 Ki = 200;
@@ -90,6 +88,8 @@ xlabel('Time (seconds)')
 ylabel('Velocity (rad/s)')
 title('Stairstep Response:with PID controller')
 
+Dz = tf(numaz, denaz, T);
+
 %2 Considerando compensador estatico
 
 rlocus(numaz,denaz)
@@ -99,17 +99,20 @@ dencz = conv([1 -1],[1.6 1]);
 numaz = conv(numz,numcz);
 denaz = conv(denz,dencz);
 
-rlocus(numaz,denaz)
+figure; rlocus(numaz,denaz)
 title('Root Locus of Compensated System');
 
 % Escolher um polo em -0.625 para anular o zero do sistema não compesado
 
-[K,poles] = rlocfind(numaz,denaz);
-[numaz_cl,denaz_cl] = cloop(K*numaz,denaz);
+[Kc,poles] = rlocfind(numaz,denaz);
 
-[x3] = dstep(numaz_cl,denaz_cl,101);
-t=0:0.12:12;
-stairs(t,x3)
+% Um ganho válido gira entorno de Kc = 40;
+[numaz_cl,denaz_cl] = cloop(Kc*numaz,denaz);
+Cz = zpk(tf(numaz_cl,denaz_cl,T));
+
+figure; nyquist(Gz*Cz); grid on;
+
+step(Gz*Cz/(1+Gz*Cz));
 xlabel('Tempo (s)'); ylabel('Velocidade (rad/s)');
 title('Sistema com controlador PID compensado, Resposta ao degrau para MF');
  
