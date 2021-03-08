@@ -1,5 +1,6 @@
 % Controle Digital
-%
+% Alunos: Diego Santos / Virgínia Almeida
+
 % Exemplo de projeto de controlador digital pelo lugar das raizes:
 % Sistema motor DC;
 % No domínio 's', G(s) = K/[(Js + b) * (Ls + R) + K^2];
