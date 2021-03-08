@@ -106,7 +106,7 @@ title('Root Locus of Compensated System');
 
 [Kc,poles] = rlocfind(numaz,denaz);
 
-% Um ganho válido gira entorno de Kc = 40;
+% Um ganho válido gira entorno de 40;
 [numaz_cl,denaz_cl] = cloop(Kc*numaz,denaz);
 Cz = zpk(tf(numaz_cl,denaz_cl,T));
 
